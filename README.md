@@ -14,3 +14,11 @@
 <ul>
   <li><a href=https://www.linkedin.com/in/fabiodemiranda/>Me. Fabio Roberto de Miranda</a></li>
 </ul>
+<h2>Informações da Atividade</h2>
+
+<h3>Objetivos:</h3>
+<p>
+Quais os ids dos marcadores visíveis na cena?
+
+Escolha um deles, e baseado nas coordenadas de translação, faça o robô se aproximar do creeper a do id que escolheu, freiando o mais próximo possível.
+</p>
