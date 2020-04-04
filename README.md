@@ -16,7 +16,7 @@
 </ul>
 <h2>Informações da Atividade</h2>
 
-<h3>Objetivos:</h3>
+<h3>Tarefas:</h3>
 <p>
 Quais os ids dos marcadores visíveis na cena?
 
