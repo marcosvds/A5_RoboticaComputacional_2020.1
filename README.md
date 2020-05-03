@@ -14,5 +14,4 @@
 <ul>
   <li><a href=https://www.linkedin.com/in/fabiodemiranda/>Me. Fabio Roberto de Miranda</a></li>
 </ul>
-<h2>Informações da Atividade</h2>
 
