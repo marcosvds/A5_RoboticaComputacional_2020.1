@@ -1,4 +1,4 @@
-# A5_RoboticaComputacional
+# P1_RoboticaComputacional
 
 <h2>Informações Gerais</h2>
 
@@ -16,9 +16,3 @@
 </ul>
 <h2>Informações da Atividade</h2>
 
-<h3>Tarefas:</h3>
-<p>
-Quais os ids dos marcadores visíveis na cena?
-
-Escolha um deles, e baseado nas coordenadas de translação, faça o robô se aproximar do creeper a do id que escolheu, freiando o mais próximo possível.
-</p>
