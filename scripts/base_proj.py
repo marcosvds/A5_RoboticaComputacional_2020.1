@@ -22,12 +22,19 @@ from nav_msgs.msg import Odometry
 from std_msgs.msg import Header
 
 import Videos
+import cormodule
 
 import visao_module
 
 lineFrame = None
 escapePoint = None
 turnParameter = None
+pointParameter = None
+
+mean = []
+center = []
+biggestArea = None
+creeperFrame = None
 
 bridge = CvBridge()
 
@@ -105,9 +112,16 @@ def roda_todo_frame(imagem):
     global media
     global centro
     global resultados
+
     global lineFrame
     global escapePoint
     global turnParameter
+    global pointParameter
+
+    global mean
+    global center
+    global biggestArea
+    global creeperFrame
 
     now = rospy.get_rostime()
     imgtime = imagem.header.stamp
@@ -122,7 +136,9 @@ def roda_todo_frame(imagem):
         temp_image = bridge.compressed_imgmsg_to_cv2(imagem, "bgr8")
         # Note que os resultados já são guardados automaticamente na variável
         # chamada resultados
-        centro, saida_net, resultados =  visao_module.processa(temp_image)        
+        centro, saida_net, resultados =  visao_module.processa(temp_image)
+
+        mean, center, biggestArea, creeperFrame =  cormodule.identifica_cor(temp_image)        
         for r in resultados:
             # print(r) - print feito para documentar e entender
             # o resultado            
@@ -134,28 +150,37 @@ def roda_todo_frame(imagem):
     except CvBridgeError as e:
         print('ex', e)
 
-    lineFrame, escapePoint, turnParameter = Videos.main(imagem)
+    lineFrame, escapePoint, turnParameter, pointParameter = Videos.main(imagem)
+
 
 def KeepInPath():
 
     global centro
     global escapePoint
     global turnParameter
+    global pointParameter
 
+    vel = Twist(Vector3(0,0,0), Vector3(0,0,0)) #Marcos me explica pf - Documentacao
 
-    vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
+    if pointParameter == 'RA':
+        vel = Twist(Vector3(0.15,0,0), Vector3(0,0,0.15))
 
-    if turnParameter == "Different":
+    if pointParameter == 'LA':
+        vel = Twist(Vector3(0.15,0,0), Vector3(0,0,-0.15))
 
-        vel = Twist(Vector3(0.15,0,0), Vector3(0,0,0))  
-    
-    if turnParameter == "Negative":
+    if pointParameter == 'None':
 
-        vel = Twist(Vector3(0,0,0), Vector3(0,0,-0.15))
+        if turnParameter == "Different":
 
-    if turnParameter == "Positive":
+            vel = Twist(Vector3(0.15,0,0), Vector3(0,0,0))  
+        
+        if turnParameter == "Negative":
 
-        vel = Twist(Vector3(0,0,0), Vector3(0,0,0.15))
+            vel = Twist(Vector3(0.15,0,0), Vector3(0,0,-0.15))
+
+        if turnParameter == "Positive":
+
+            vel = Twist(Vector3(0.15,0,0), Vector3(0,0,0.15))
 
     return vel
 
@@ -173,9 +198,6 @@ if __name__=="__main__":
     recebedor = rospy.Subscriber(topico_imagem, CompressedImage, roda_todo_frame, queue_size=4, buff_size = 2**24)
     recebedor = rospy.Subscriber("/ar_pose_marker", AlvarMarkers, recebe) # Para recebermos notificacoes de que marcadores foram vistos
 
-
-    print("Usando ", topico_imagem)
-
     velocidade_saida = rospy.Publisher("/cmd_vel", Twist, queue_size = 1)
 
 
@@ -192,17 +214,18 @@ if __name__=="__main__":
 
             vel = KeepInPath()
 
-            for r in resultados:
+            for r in resultados: #Rede neural
                 print(r)
 
             if cv_image is not None:
                 # Note que o imshow precisa ficar *ou* no codigo de tratamento de eventos *ou* no thread principal, não em ambos
-                cv2.imshow("cv_image no loop principal", lineFrame)
+                cv2.imshow("1", lineFrame)
+                cv2.imshow("2", creeperFrame)
                 print(escapePoint)
-                cv2.waitKey(1)
+                cv2.waitKey(1) #Botao que fecha a tela
                 
-            velocidade_saida.publish(vel)
-            rospy.sleep(0.1)
+            velocidade_saida.publish(vel) #envia a velocidade para o robo
+            rospy.sleep(0.1) #intervalo entre processos
 
     except rospy.ROSInterruptException:
         print("Ocorreu uma exceção com o rospy")
