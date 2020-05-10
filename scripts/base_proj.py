@@ -26,16 +26,22 @@ import cormodule
 
 import visao_module
 
+
+color = "Azul"
+
 lineFrame = None
 escapePoint = None
 turnParameter = None
 pointParameter = None
+checker0 = None
 
 mean = []
 center = []
 biggestArea = None
 creeperFrame = None
 
+target = 0
+contadorContorno = 0
 bridge = CvBridge()
 
 cv_image = None
@@ -117,11 +123,14 @@ def roda_todo_frame(imagem):
     global escapePoint
     global turnParameter
     global pointParameter
+    global checker0
 
     global mean
     global center
     global biggestArea
     global creeperFrame
+    global contadorContorno
+    global target
 
     now = rospy.get_rostime()
     imgtime = imagem.header.stamp
@@ -138,7 +147,7 @@ def roda_todo_frame(imagem):
         # chamada resultados
         centro, saida_net, resultados =  visao_module.processa(temp_image)
 
-        mean, center, biggestArea, creeperFrame =  cormodule.identifica_cor(temp_image)        
+        mean, center, biggestArea, creeperFrame, contadorContorno, target =  cormodule.identifica_cor(temp_image, contadorContorno, target, color)        
         for r in resultados:
             # print(r) - print feito para documentar e entender
             # o resultado            
@@ -150,7 +159,7 @@ def roda_todo_frame(imagem):
     except CvBridgeError as e:
         print('ex', e)
 
-    lineFrame, escapePoint, turnParameter, pointParameter = Videos.main(imagem)
+    lineFrame, escapePoint, turnParameter, pointParameter, checker0 = Videos.main(imagem)
 
 
 def KeepInPath():
@@ -159,28 +168,46 @@ def KeepInPath():
     global escapePoint
     global turnParameter
     global pointParameter
+    global checker0
 
     vel = Twist(Vector3(0,0,0), Vector3(0,0,0)) #Marcos me explica pf - Documentacao
 
-    if pointParameter == 'RA':
-        vel = Twist(Vector3(0.15,0,0), Vector3(0,0,0.15))
-
-    if pointParameter == 'LA':
+    
+    if checker0 == "Max0":
         vel = Twist(Vector3(0.15,0,0), Vector3(0,0,-0.15))
 
-    if pointParameter == 'None':
+    elif checker0 == "Min0":
+        vel = Twist(Vector3(0.15,0,0), Vector3(0,0, 0.15))
+    
+    else:
+    
+        if pointParameter == 'RA':
+            vel = Twist(Vector3(0.15,0,0), Vector3(0,0,0.15))
 
-        if turnParameter == "Different":
-
-            vel = Twist(Vector3(0.15,0,0), Vector3(0,0,0))  
-        
-        if turnParameter == "Negative":
-
+        if pointParameter == 'LA':
             vel = Twist(Vector3(0.15,0,0), Vector3(0,0,-0.15))
 
-        if turnParameter == "Positive":
+        if pointParameter == 'None':
 
-            vel = Twist(Vector3(0.15,0,0), Vector3(0,0,0.15))
+            if turnParameter == "Different":
+
+                if (escapePoint[0] > centro[0]):
+                    vel = Twist(Vector3(0.15,0,0), Vector3(0,0,-0.1))      
+
+                if (escapePoint[0] < centro[0]):
+                    vel = Twist(Vector3(0.15,0,0), Vector3(0,0,0.1))
+
+                if (abs(escapePoint[0] - centro[0]) < 10):
+                    vel = Twist(Vector3(0.2,0,0), Vector3(0,0,0))
+
+            
+            if turnParameter == "Negative":
+
+                vel = Twist(Vector3(0.15,0,0), Vector3(0,0,-0.15))
+
+            if turnParameter == "Positive":
+
+                vel = Twist(Vector3(0.15,0,0), Vector3(0,0,0.15))
 
     return vel
 
@@ -210,21 +237,21 @@ if __name__=="__main__":
         
         while not rospy.is_shutdown():
 
-            vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
+            vela = Twist(Vector3(0,0,0), Vector3(0,0,0))
 
             vel = KeepInPath()
 
-            for r in resultados: #Rede neural
-                print(r)
+            #for r in resultados: #Rede neural
+            #   print(r)
 
             if cv_image is not None:
                 # Note que o imshow precisa ficar *ou* no codigo de tratamento de eventos *ou* no thread principal, não em ambos
                 cv2.imshow("1", lineFrame)
                 cv2.imshow("2", creeperFrame)
-                print(escapePoint)
+                #print(escapePoint)
                 cv2.waitKey(1) #Botao que fecha a tela
                 
-            velocidade_saida.publish(vel) #envia a velocidade para o robo
+            velocidade_saida.publish(vela) #envia a velocidade para o robo
             rospy.sleep(0.1) #intervalo entre processos
 
     except rospy.ROSInterruptException:

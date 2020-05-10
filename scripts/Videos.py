@@ -73,6 +73,21 @@ def CheckAngCoef (coefAngGen, indMax, indMin):
     else:
         return "Different"
 
+
+def CheckAngCoefValue (coefAngGen, indMax, indMin):
+
+    coefAngMax = coefAngGen[indMax]
+    coefAngMin = coefAngGen[indMin]
+
+    if abs (coefAngMax) < 0.2 and coefAngMin <0:
+        return "Max0"
+    
+    elif abs(coefAngMin) < 0.2  and coefAngMax > 0:
+        return "Min0"
+
+    else:
+        return "None"
+
 def CheckPoint(x2Max, x1Min, withFrame):
 
     if x2Max < (withFrame/2) and x1Min < (withFrame/2):
@@ -159,9 +174,11 @@ def main(frame):
     
     turnParameter = CheckAngCoef(angCoef, iMax, iMin) #Compara os coeficientes angular, se forem maior, menor ou diferente - a partir disso consegue determinar se esta na borda, esquerda, direita ou nao.
 
+    checker0 = CheckAngCoefValue(angCoef, iMax, iMin)
+
     pointParameter = CheckPoint(x2[iMax], x1[iMin], with_frame) #indice seleciona o coeficiente angular
     
     Draw(final, pointX, pointY, x2[iMax], y2[iMax], x1[iMin], y1[iMin])
 
     
-    return final, (pointX, pointY), turnParameter, pointParameter
+    return final, (pointX, pointY), turnParameter, pointParameter, checker0
