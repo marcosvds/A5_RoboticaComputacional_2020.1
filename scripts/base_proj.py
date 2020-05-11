@@ -27,7 +27,7 @@ import cormodule
 import visao_module
 
 
-color = "Azul"
+color = "Rosa"
 
 lineFrame = None
 escapePoint = None

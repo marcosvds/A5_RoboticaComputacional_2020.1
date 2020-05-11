@@ -31,16 +31,24 @@ def identifica_cor(frame, contadorContorno, target, color):
         cor_maior = np.array([60, 255, 255])
 
     if color == "Azul":
-        cor_menor = np.array([50, 50, 50])
-        cor_maior = np.array([60, 255, 255])
+        cor_menor = np.array([88, 50, 50])
+        cor_maior = np.array([108, 255, 255])
 
     if color == "Rosa":  
-        cor_menor = np.array([50, 50, 50])
-        cor_maior = np.array([60, 255, 255])
+        cor_menor = np.array([140, 50, 50])
+        cor_maior = np.array([150, 255, 255])
 
     frame_hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) 
+    img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2GRAY)
     segmentado_cor = cv2.inRange(frame_hsv, cor_menor, cor_maior)
     segmentado_cor = cv2.morphologyEx(segmentado_cor,cv2.MORPH_CLOSE,np.ones((7, 7)))
+
+    not_mask = cv2.bitwise_not(segmentado_cor) 
+    res = cv2.bitwise_and(img_gray,img_gray, mask = not_mask) 
+    res2 = cv2.cvtColor(res, cv2.COLOR_GRAY2RGB) 
+    res3 = cv2.bitwise_and(frame,frame, mask= segmentado_cor) 
+    final = cv2.bitwise_or(res3, res2)
 
     contornos, arvore = cv2.findContours(segmentado_cor.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) 
 
@@ -49,7 +57,7 @@ def identifica_cor(frame, contadorContorno, target, color):
         maior_contorno = cnt
         maior_contorno_area = area
 
-    if maior_contorno_area < 750 and maior_contorno_area > 10 :
+    if maior_contorno_area < 1000 and maior_contorno_area > 10 :
         contadorContorno += 1
     
     else:
@@ -63,8 +71,8 @@ def identifica_cor(frame, contadorContorno, target, color):
             maior_contorno = np.reshape(maior_contorno, (maior_contorno.shape[0], 2))
             media = maior_contorno.mean(axis=0)
             media = media.astype(np.int32)
-            cv2.circle(frame, (media[0], media[1]), 3, [0, 255, 0], 5)
-            cross(frame, centro, [0,255,0], 5, 17)
+            cv2.circle(final, (media[0], media[1]), 3, [0, 255, 0], 5)
+            cross(final, centro, [0,255,0], 5, 17)
         
         else:
             media = (0, 0)
@@ -74,4 +82,4 @@ def identifica_cor(frame, contadorContorno, target, color):
 
     print(maior_contorno_area, contadorContorno, target)
 
-    return media, centro, maior_contorno_area, segmentado_cor, contadorContorno, target
+    return media, centro, maior_contorno_area, final, contadorContorno, target
