@@ -27,7 +27,9 @@ import cormodule
 import visao_module
 
 
-color = "Rosa"
+color = "Verde"
+#color = "Rosa"
+#color = "Azul"
 
 lineFrame = None
 escapePoint = None
@@ -237,7 +239,7 @@ if __name__=="__main__":
         
         while not rospy.is_shutdown():
 
-            vela = Twist(Vector3(0,0,0), Vector3(0,0,0))
+            vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
 
             vel = KeepInPath()
 
@@ -251,7 +253,7 @@ if __name__=="__main__":
                 #print(escapePoint)
                 cv2.waitKey(1) #Botao que fecha a tela
                 
-            velocidade_saida.publish(vela) #envia a velocidade para o robo
+            velocidade_saida.publish(vel) #envia a velocidade para o robo
             rospy.sleep(0.1) #intervalo entre processos
 
     except rospy.ROSInterruptException:
