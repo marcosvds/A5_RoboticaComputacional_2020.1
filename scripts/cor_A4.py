@@ -6,7 +6,6 @@ from geometry_msgs.msg import Twist, Vector3, Pose, Vector3Stamped
 def Go_to_creeper (media, mode, centro, dist):
 
 	vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
-	print(dist)
 
 	if len(media) != 0 and len(centro) != 0:
 

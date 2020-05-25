@@ -1,25 +1,17 @@
 from __future__ import print_function, division
-import rospy
-import numpy as np
-import cv2
-from geometry_msgs.msg import Twist, Vector3
-from nav_msgs.msg import Odometry
-from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist, Vector3
 import math
 import time
-from tf import transformations
 import sys
 
 rotationComplete = False
 translationComplete = False
 
-### Funcoes da solucao
 import math 
 
 max_angular = math.pi/8
 
-def go_home(timer, found):
+def go_home(timer, found, point, sameSideCoef, center):
 
     global rotationComplete
     global translationComplete
@@ -30,7 +22,6 @@ def go_home(timer, found):
     sleep_rot = abs(math.pi/max_angular)
 
     if rotationComplete == False:
-        print(vel_rot, "\n",  sleep_rot)
         vel = vel_rot
         sleeptime = sleep_rot
         rotationComplete = True
@@ -38,10 +29,31 @@ def go_home(timer, found):
     
     elif rotationComplete == True and translationComplete == False:
         if not found:
-            vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
-            sleeptime = 0.1
-            goHome = True
+
             translationComplete = False
+            goHome = True
+            sleeptime = 0.1
+            
+
+            if sameSideCoef == "Different":
+        
+                if (point[0] > center[0]):
+                    vel = Twist(Vector3(0.15,0,0), Vector3(0,0,-0.1))      
+
+                if (point[0] < center[0]):
+                    vel = Twist(Vector3(0.15,0,0), Vector3(0,0,0.1))
+
+                if (abs(point[0] - center[0]) < 10):
+                    vel = Twist(Vector3(0.2,0,0), Vector3(0,0,0))
+
+            
+            if sameSideCoef == "Negative":
+
+                vel = Twist(Vector3(0.15,0,0), Vector3(0,0,0.15))
+
+            if sameSideCoef == "Positive":
+
+                vel = Twist(Vector3(0.15,0,0), Vector3(0,0,-0.15))
         else:
             translationComplete = True
             goHome = True
@@ -49,11 +61,9 @@ def go_home(timer, found):
             sleeptime = 0.1
 
     else:
-        print("Terminou um ciclo")
         vel = zero
         sleeptime = 0.1
         goHome = False
     
-    print("le gohome:" , goHome)
-    return vel, goHome, sleeptime
+    return vel, goHome, rotationComplete, sleeptime
      

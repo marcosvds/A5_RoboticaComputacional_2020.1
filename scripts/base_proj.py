@@ -38,6 +38,8 @@ turnParameter = None
 pointParameter = None
 checker0 = None
 
+Tcomplete = 0
+
 mode = "Searching"
 
 deploy = False
@@ -56,6 +58,8 @@ bridge = CvBridge()
 
 saveTime = True
 
+foundPath = False
+
 cv_image = None
 media = []
 centro = []
@@ -64,6 +68,8 @@ atraso = 1.5E9 # 1 segundo e meio. Em nanossegundos
 dist = None
 
 sleep = 0.1
+
+A = True
 
 timeToGoHome = False
 
@@ -187,17 +193,6 @@ def roda_todo_frame(imagem):
 
     lineFrame, escapePoint, turnParameter, pointParameter, checker0 = Videos.main(imagem)
 
-
-def findPath(objective, center):
-    
-    if abs(objective[0] - center[0]) < 40:
-        result = True
-    
-    else:
-        result = False
-    
-    return result
-
 def scaneou(dado):
     global dist 
     dist = np.array(dado.ranges).round(decimals=2)[0]
@@ -281,7 +276,7 @@ if __name__=="__main__":
     recebe_scan = rospy.Subscriber("/scan", LaserScan, scaneou)
 
     recebedor = rospy.Subscriber(topico_imagem, CompressedImage, roda_todo_frame, queue_size=4, buff_size = 2**24)
-    recebedor = rospy.Subscriber("/ar_pose_marker", AlvarMarkers, recebe) # Para recebermos notificacoes de que marcadores foram vistos
+    #recebedor = rospy.Subscriber("/ar_pose_marker", AlvarMarkers, recebe) # Para recebermos notificacoes de que marcadores foram vistos
 
     velocidade_saida = rospy.Publisher("/cmd_vel", Twist, queue_size = 1)
 
@@ -293,34 +288,36 @@ if __name__=="__main__":
     try:
         
         while not rospy.is_shutdown():
-            
-            print("o q?",timeToGoHome )
+
             if timeToGoHome == True:
                 if saveTime:
                     savedTime = timer
                     saveTime = False
 
-                foundPath = findPath(escapePoint, centro)
-                vel, timeToGoHome, sleep = le_imu.go_home(savedTime, foundPath)
+                if Tcomplete:
+                    if A:
+                        timerA = time.time()
+                        A = False
+
+                    if time.time() - timerA > 5:
+                        foundPath = True
+                
+                vel, timeToGoHome, Tcomplete, sleep = le_imu.go_home(savedTime, foundPath, escapePoint, turnParameter, centro)
+
                 deploy = True
                 target = 0
-                print("timeto:", timeToGoHome, target)
             
             elif deploy:
                 KeepInPath()
             
             else: 
-                print ("entrou")
                 if target:
                     if resetOdom:
                         timer = time.time()
-                        print("Timer zerado")
                         resetOdom = False
-                    print("chamou")
                     GoingToCreeper()
                     
                 else:
-                    print("Nao chamou")
                     KeepInPath()
 
             #for r in resultados: #Rede neural
@@ -330,10 +327,8 @@ if __name__=="__main__":
                 # Note que o imshow precisa ficar *ou* no codigo de tratamento de eventos *ou* no thread principal, não em ambos
                 cv2.imshow("1", lineFrame)
                 cv2.imshow("2", creeperFrame)
-                #print(escapePoint)
                 cv2.waitKey(1) #Botao que fecha a tela
    
-            
             velocidade_saida.publish(vel) #envia a velocidade para o robo
             rospy.sleep(sleep) #intervalo entre processos
 

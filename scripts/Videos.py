@@ -168,17 +168,24 @@ def main(frame):
             angCoef.append(line[0])
             linCoef.append(line[1])
             
-    iMax, iMin = ChooseLine(angCoef)
-    
-    pointX, pointY = IntPoin(angCoef, linCoef, iMax, iMin) #Calcula o ponto de fuga por meio da reta de maior e menor coeficiente angular
-    
-    turnParameter = CheckAngCoef(angCoef, iMax, iMin) #Compara os coeficientes angular, se forem maior, menor ou diferente - a partir disso consegue determinar se esta na borda, esquerda, direita ou nao.
+        iMax, iMin = ChooseLine(angCoef)
+        
+        pointX, pointY = IntPoin(angCoef, linCoef, iMax, iMin) #Calcula o ponto de fuga por meio da reta de maior e menor coeficiente angular
+        
+        turnParameter = CheckAngCoef(angCoef, iMax, iMin) #Compara os coeficientes angular, se forem maior, menor ou diferente - a partir disso consegue determinar se esta na borda, esquerda, direita ou nao.
 
-    checker0 = CheckAngCoefValue(angCoef, iMax, iMin)
+        checker0 = CheckAngCoefValue(angCoef, iMax, iMin)
 
-    pointParameter = CheckPoint(x2[iMax], x1[iMin], with_frame) #indice seleciona o coeficiente angular
-    
-    Draw(final, pointX, pointY, x2[iMax], y2[iMax], x1[iMin], y1[iMin])
+        pointParameter = CheckPoint(x2[iMax], x1[iMin], with_frame) #indice seleciona o coeficiente angular
+        
+        Draw(final, pointX, pointY, x2[iMax], y2[iMax], x1[iMin], y1[iMin])
 
+    else:
+
+        pointX = 0
+        pointY = 0
+        turnParameter = "Different"
+        pointParameter = "None"
+        checker0 = "None"
     
     return final, (pointX, pointY), turnParameter, pointParameter, checker0
