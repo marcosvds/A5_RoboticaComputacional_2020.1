@@ -18,16 +18,19 @@ from tf import TransformerROS
 import tf2_ros
 from geometry_msgs.msg import Twist, Vector3, Pose, Vector3Stamped
 from ar_track_alvar_msgs.msg import AlvarMarker, AlvarMarkers
-from nav_msgs.msg import Odometry
 from std_msgs.msg import Header
+from std_msgs.msg import Empty
+from sensor_msgs.msg import LaserScan
+
 
 import Videos
 import cormodule
-
 import visao_module
+import cor_A4
+import le_imu
 
 
-color = "Rosa"
+color = "Azul"
 
 lineFrame = None
 escapePoint = None
@@ -35,19 +38,42 @@ turnParameter = None
 pointParameter = None
 checker0 = None
 
+mode = "Searching"
+
+deploy = False
+
 mean = []
 center = []
 biggestArea = None
 creeperFrame = None
 
+resetOdom = True
+timer = 0
+
 target = 0
 contadorContorno = 0
 bridge = CvBridge()
+
+saveTime = True
 
 cv_image = None
 media = []
 centro = []
 atraso = 1.5E9 # 1 segundo e meio. Em nanossegundos
+
+dist = None
+
+sleep = 0.1
+
+timeToGoHome = False
+
+x = None
+y = None
+contador = 0
+pula = 100
+alfa = -1
+
+vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
 
 
 area = 0.0 # Variavel com a area do maior contorno
@@ -162,6 +188,37 @@ def roda_todo_frame(imagem):
     lineFrame, escapePoint, turnParameter, pointParameter, checker0 = Videos.main(imagem)
 
 
+def findPath(objective, center):
+    
+    if abs(objective[0] - center[0]) < 40:
+        result = True
+    
+    else:
+        result = False
+    
+    return result
+
+def scaneou(dado):
+    global dist 
+    dist = np.array(dado.ranges).round(decimals=2)[0]
+
+def GoingToCreeper():
+    global center
+    global mean
+    global dist 
+    global mode
+    global vel
+    global timeToGoHome
+    global count
+    global countRight
+    global countLeft
+
+    vel, mode = cor_A4.Go_to_creeper(mean, mode, center, dist)
+
+    if mode == "In front of object":
+        timeToGoHome = True
+
+
 def KeepInPath():
 
     global centro
@@ -169,6 +226,7 @@ def KeepInPath():
     global turnParameter
     global pointParameter
     global checker0
+    global vel
 
     vel = Twist(Vector3(0,0,0), Vector3(0,0,0)) #Marcos me explica pf - Documentacao
 
@@ -209,8 +267,6 @@ def KeepInPath():
 
                 vel = Twist(Vector3(0.15,0,0), Vector3(0,0,0.15))
 
-    return vel
-
 
 
 
@@ -222,11 +278,12 @@ if __name__=="__main__":
 
     topico_imagem = "/camera/rgb/image_raw/compressed"
 
+    recebe_scan = rospy.Subscriber("/scan", LaserScan, scaneou)
+
     recebedor = rospy.Subscriber(topico_imagem, CompressedImage, roda_todo_frame, queue_size=4, buff_size = 2**24)
     recebedor = rospy.Subscriber("/ar_pose_marker", AlvarMarkers, recebe) # Para recebermos notificacoes de que marcadores foram vistos
 
     velocidade_saida = rospy.Publisher("/cmd_vel", Twist, queue_size = 1)
-
 
     tolerancia = 25
 
@@ -236,10 +293,35 @@ if __name__=="__main__":
     try:
         
         while not rospy.is_shutdown():
+            
+            print("o q?",timeToGoHome )
+            if timeToGoHome == True:
+                if saveTime:
+                    savedTime = timer
+                    saveTime = False
 
-            vela = Twist(Vector3(0,0,0), Vector3(0,0,0))
-
-            vel = KeepInPath()
+                foundPath = findPath(escapePoint, centro)
+                vel, timeToGoHome, sleep = le_imu.go_home(savedTime, foundPath)
+                deploy = True
+                target = 0
+                print("timeto:", timeToGoHome, target)
+            
+            elif deploy:
+                KeepInPath()
+            
+            else: 
+                print ("entrou")
+                if target:
+                    if resetOdom:
+                        timer = time.time()
+                        print("Timer zerado")
+                        resetOdom = False
+                    print("chamou")
+                    GoingToCreeper()
+                    
+                else:
+                    print("Nao chamou")
+                    KeepInPath()
 
             #for r in resultados: #Rede neural
             #   print(r)
@@ -250,9 +332,10 @@ if __name__=="__main__":
                 cv2.imshow("2", creeperFrame)
                 #print(escapePoint)
                 cv2.waitKey(1) #Botao que fecha a tela
-                
-            velocidade_saida.publish(vela) #envia a velocidade para o robo
-            rospy.sleep(0.1) #intervalo entre processos
+   
+            
+            velocidade_saida.publish(vel) #envia a velocidade para o robo
+            rospy.sleep(sleep) #intervalo entre processos
 
     except rospy.ROSInterruptException:
         print("Ocorreu uma exceção com o rospy")

@@ -1,6 +1,3 @@
-# roslaunch turtlebot3_gazebo  turtlebot3_empty_world.launch 
-
-
 from __future__ import print_function, division
 import rospy
 import numpy as np
@@ -12,31 +9,51 @@ from geometry_msgs.msg import Twist, Vector3
 import math
 import time
 from tf import transformations
+import sys
 
+rotationComplete = False
+translationComplete = False
 
-x = None
-y = None
-angulo = None 
-ix = 0
-iy = 0
+### Funcoes da solucao
+import math 
 
-contador = 0
-pula = 50
+max_angular = math.pi/8
 
-def recebe_odometria(data):
-    global x
-    global y
-    global angulo
-    global contador
+def go_home(timer, found):
 
-    x = data.pose.pose.position.x
-    y = data.pose.pose.position.y
+    global rotationComplete
+    global translationComplete
 
-    quat = data.pose.pose.orientation
-    lista = [quat.x, quat.y, quat.z, quat.w]
-    angulos = np.degrees(transformations.euler_from_quaternion(lista))
-    angulo = angulos[2]    
+    vel_rot = Twist(Vector3(0,0,0), Vector3(0,0,max_angular))
+    zero = Twist(Vector3(0,0,0), Vector3(0,0,0))
 
-    if contador % pula == 0:
-        print("Posicao (x,y)  ({:.2f} , {:.2f}) + angulo {:.2f}".format(x, y,angulos[2]))
-    contador = contador + 1
+    sleep_rot = abs(math.pi/max_angular)
+
+    if rotationComplete == False:
+        print(vel_rot, "\n",  sleep_rot)
+        vel = vel_rot
+        sleeptime = sleep_rot
+        rotationComplete = True
+        goHome = True
+    
+    elif rotationComplete == True and translationComplete == False:
+        if not found:
+            vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
+            sleeptime = 0.1
+            goHome = True
+            translationComplete = False
+        else:
+            translationComplete = True
+            goHome = True
+            vel = zero
+            sleeptime = 0.1
+
+    else:
+        print("Terminou um ciclo")
+        vel = zero
+        sleeptime = 0.1
+        goHome = False
+    
+    print("le gohome:" , goHome)
+    return vel, goHome, sleeptime
+     

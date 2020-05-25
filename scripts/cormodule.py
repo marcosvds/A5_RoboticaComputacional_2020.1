@@ -80,6 +80,7 @@ def identifica_cor(frame, contadorContorno, target, color):
     else:
         media = (0, 0)
 
-    print(maior_contorno_area, contadorContorno, target)
+    print("cormodule:", target)
+    
 
     return media, centro, maior_contorno_area, final, contadorContorno, target
