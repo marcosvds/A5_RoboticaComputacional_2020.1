@@ -31,6 +31,8 @@ import le_imu
 
 
 color = "Azul"
+objeto = "bird"
+
 
 lineFrame = None
 escapePoint = None
@@ -39,10 +41,12 @@ pointParameter = None
 checker0 = None
 
 Tcomplete = 0
+Tcomplete2 = 0
 
 mode = "Searching"
 
 deploy = False
+end = False
 
 mean = []
 center = []
@@ -50,15 +54,19 @@ biggestArea = None
 creeperFrame = None
 
 resetOdom = True
+resetOdom2 = True 
 timer = 0
+timer2 = 0
 
 target = 0
 contadorContorno = 0
 bridge = CvBridge()
 
 saveTime = True
+saveTime2 = True
 
 foundPath = False
+foundPath2 = False
 
 cv_image = None
 media = []
@@ -69,9 +77,13 @@ dist = None
 
 sleep = 0.1
 
+detectedPoint = None
+
 A = True
+B = True
 
 timeToGoHome = False
+timeToGoHomeAgain = False
 
 x = None
 y = None
@@ -81,6 +93,7 @@ alfa = -1
 
 vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
 
+saida_net = None
 
 area = 0.0 # Variavel com a area do maior contorno
 
@@ -164,6 +177,10 @@ def roda_todo_frame(imagem):
     global contadorContorno
     global target
 
+    global detected
+    global detectedPoint
+    global saida_net
+
     now = rospy.get_rostime()
     imgtime = imagem.header.stamp
     lag = now-imgtime # calcula o lag
@@ -175,15 +192,17 @@ def roda_todo_frame(imagem):
     try:
         antes = time.clock()
         temp_image = bridge.compressed_imgmsg_to_cv2(imagem, "bgr8")
-        # Note que os resultados já são guardados automaticamente na variável
-        # chamada resultados
         centro, saida_net, resultados =  visao_module.processa(temp_image)
-
         mean, center, biggestArea, creeperFrame, contadorContorno, target =  cormodule.identifica_cor(temp_image, contadorContorno, target, color)        
+        
         for r in resultados:
-            # print(r) - print feito para documentar e entender
-            # o resultado            
+            detected = (r[0]) 
+            detectedPoint = (r[3][0] - r[2][0], abs(r[2][1] - r[3][1]))            
             pass
+
+
+        if detectedPoint != None:
+            cv2.circle(saida_net, detectedPoint, 5,(0,0,255),3)
 
         depois = time.clock()
         # Desnecessário - Hough e MobileNet já abrem janelas
@@ -204,14 +223,24 @@ def GoingToCreeper():
     global mode
     global vel
     global timeToGoHome
-    global count
-    global countRight
-    global countLeft
 
-    vel, mode = cor_A4.Go_to_creeper(mean, mode, center, dist)
+    vel, mode = cor_A4.Go_to(mean, mode, center, dist)
 
     if mode == "In front of object":
         timeToGoHome = True
+
+def GoingToObject():
+    global center
+    global detectedPoint
+    global dist 
+    global mode
+    global vel
+    global timeToGoHomeAgain
+
+    vel, mode = cor_A4.Go_to(detectedPoint, mode, center, dist)
+
+    if mode == "In front of object":
+        timeToGoHomeAgain = True
 
 
 def KeepInPath():
@@ -290,6 +319,7 @@ if __name__=="__main__":
         while not rospy.is_shutdown():
 
             if timeToGoHome == True:
+                mode = "Searching"
                 if saveTime:
                     savedTime = timer
                     saveTime = False
@@ -308,7 +338,35 @@ if __name__=="__main__":
                 target = 0
             
             elif deploy:
-                KeepInPath()
+                if timeToGoHomeAgain == True:
+                    if saveTime2:
+                        savedTime2 = timer2
+                        saveTime2 = False
+
+                    if Tcomplete2:
+                        if B:
+                            timerB = time.time()
+                            B = False
+
+                        if time.time() - timerB > 5:
+                            foundPath2 = True
+                    
+                    vel, timeToGoHomeAgain, Tcomplete2, sleep = le_imu.go_home(savedTime2, foundPath2, escapePoint, turnParameter, centro)
+                    
+                    end = True
+                
+                elif end:
+                    KeepInPath()
+
+                else:
+                    if objeto == detected:
+                        if resetOdom2:
+                            timer2 = time.time()
+                            resetOdom = False
+                        GoingToObject()
+                    
+                    else:
+                        KeepInPath()
             
             else: 
                 if target:
@@ -327,6 +385,7 @@ if __name__=="__main__":
                 # Note que o imshow precisa ficar *ou* no codigo de tratamento de eventos *ou* no thread principal, não em ambos
                 cv2.imshow("1", lineFrame)
                 cv2.imshow("2", creeperFrame)
+                cv2.imshow("3", saida_net)
                 cv2.waitKey(1) #Botao que fecha a tela
    
             velocidade_saida.publish(vel) #envia a velocidade para o robo

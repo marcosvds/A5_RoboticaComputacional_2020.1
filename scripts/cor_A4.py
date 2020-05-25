@@ -3,7 +3,7 @@
 
 from geometry_msgs.msg import Twist, Vector3, Pose, Vector3Stamped
 
-def Go_to_creeper (media, mode, centro, dist):
+def Go_to (media, mode, centro, dist):
 
 	vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
 
@@ -29,7 +29,7 @@ def Go_to_creeper (media, mode, centro, dist):
 			vel = Twist(Vector3(0.1,0,0), Vector3(0,0,0))
 			mode = "Aproach started"
 
-		if dist < 0.35 and (mode == "In front of object" or mode == "Aproach started"):
+		if dist < 0.40 and (mode == "In front of object" or mode == "Aproach started"):
 			vel = Twist(Vector3(0,0,0), Vector3(0,0,0))
 			mode = "In front of object"
 	
