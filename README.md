@@ -23,7 +23,7 @@
 <ul>
 </li>
   <li><a href=https://youtu.be/rIv05ST8wB0>goal1 - Blue</a></li>
-  <li><a href=https://www.youtube.com/watch?v=UmW7EfXVaRk&feature=youtu.be>goal2</a></li>
+  <li><a href=https://youtu.be/BxPY7gSX_mY>goal2 - Green</a></li>
   <li><a href=https://www.youtube.com/watch?v=UmW7EfXVaRk&feature=youtu.be>goal3</a></li>
 </ul>
 
