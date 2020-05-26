@@ -14,3 +14,19 @@
 <ul>
   <li><a href=https://www.linkedin.com/in/fabiodemiranda/>Me. Fabio Roberto de Miranda</a></li>
 </ul>
+
+<h2>Informações da Atividade</h2>
+
+<h3>Vídeos de Comprovação:</h3>
+
+<h4>Conceito C</h4>
+<ul>
+</li>
+  <li><a href=https://www.youtube.com/watch?v=UmW7EfXVaRk&feature=youtu.be>goal1</a></li>
+  <li><a href=https://www.youtube.com/watch?v=UmW7EfXVaRk&feature=youtu.be>goal2</a></li>
+  <li><a href=https://www.youtube.com/watch?v=UmW7EfXVaRk&feature=youtu.be>goal3</a></li>
+</ul>
+
+
+
+
