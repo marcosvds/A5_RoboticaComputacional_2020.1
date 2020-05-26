@@ -24,7 +24,7 @@
 </li>
   <li><a href=https://youtu.be/rIv05ST8wB0>goal1 - Blue</a></li>
   <li><a href=https://youtu.be/BxPY7gSX_mY>goal2 - Green</a></li>
-  <li><a href=https://youtu.be/95wyEYhZX1k>goal3 - Pink</a></li>
+  <li><a href=hhttps://youtu.be/YxJYNwKTyIo>goal3 - Pink</a></li>
 </ul>
 
 <h4>Conceito B</h4>
