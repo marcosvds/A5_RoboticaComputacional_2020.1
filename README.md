@@ -30,9 +30,9 @@
 <h4>Conceito B</h4>
 <ul>
 </li>
-  <li><a href=https://bit.ly/2X4J7ZP>goal1 - Blue, Cat</a></li>
-  <li><a href=https://bit.ly/2ZFPa8O>goal2 - Green, Dog</a></li>
-  <li><a href=https://bit.ly/2ZCGVKL>goal3 - Pink, Bike</a></li>
+  <li><a href=https://bit.ly/ROBOTICA_B1>goal1 - Blue, Cat</a></li>
+  <li><a href=https://bit.ly/ROBOTICA_B2>goal2 - Green, Dog</a></li>
+  <li><a href=https://bit.ly/ROBOTICA_B3>goal3 - Pink, Bike</a></li>
 </ul>
 
 
