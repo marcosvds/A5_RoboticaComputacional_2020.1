@@ -27,12 +27,5 @@
   <li><a href=https://youtu.be/YxJYNwKTyIo>goal3 - Pink</a></li>
 </ul>
 
-<h4>Conceito B</h4>
-<ul>
-</li>
-  <li><a href=https://bit.ly/ROBOTICA_B1>goal1 - Blue, Cat</a></li>
-  <li><a href=https://bit.ly/ROBOTICA_B2>goal2 - Green, Dog</a></li>
-  <li><a href=https://bit.ly/ROBOTICA_B3>goal3 - Pink, Bike</a></li>
-</ul>
 
 
